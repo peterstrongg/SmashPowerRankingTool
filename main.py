@@ -8,7 +8,7 @@ import Player
 
 KEY = pysmashgg.SmashGG('2429ea2ccddc1718cc121120d210722e', True)
 FILE_NAME = 'events.txt'
-ATTENDANCE_REQ = 1
+ATTENDANCE_REQ = 3
 
 def getElligiblePlayers(tournaments):
     players = []
@@ -37,12 +37,7 @@ def getElligiblePlayers(tournaments):
         # end while
     # end for
 
-    elligiblePlayers = []
-    for i in range(len(players)):
-        if(players[i].attendance >= ATTENDANCE_REQ):
-            elligiblePlayers.append(players[i])
-
-    return elligiblePlayers
+    return players
 # end def
 
 def getH2H(players, tournaments):
@@ -69,6 +64,10 @@ def getH2H(players, tournaments):
                     sets = KEY.tournament_show_sets(tournament, 'ultimate-singles', page)
                     break
                 # end if
+
+                # if a dq then dont count set
+                if set['entrant1Score'] == -1 or set['entrant2Score'] == -1:
+                    continue
 
                 for player in players:
                     if player.tag == winner:
@@ -107,40 +106,56 @@ def writeToExcel(players):
     wbk = xlsxwriter.Workbook('H2HData.xlsx')
     sheet = wbk.add_worksheet()
 
-    sheet.set_column(0, 0, 25)
+    sheet.set_column(0, 0, 17)
     sheet.set_column(1, len(players), 14)
     sheet.set_row(0, 30)
+
+    colFormat = wbk.add_format(); colFormat.set_align('right')
+    rowFormat = wbk.add_format(); rowFormat.set_align('center')
 
     row = 1
     col = 1
     for player in players:
+        if player.attendance < ATTENDANCE_REQ:
+            continue
         sheet.set_row(row, 30)
-        sheet.write(row, 0, player.tag)
-        sheet.write(0, col, player.tag)
+        sheet.write(row, 0, player.tag, colFormat)
+        sheet.write(0, col, player.tag, rowFormat)
         row += 1
         col += 1
     # end for
 
-    red = wbk.add_format(); red.set_bg_color('red')
-    green = wbk.add_format(); green.set_bg_color('green')
-    yellow = wbk.add_format(); yellow.set_bg_color('yellow')
+    # Setting spreadsheet styles for h2h values
+    red = wbk.add_format(); red.set_bg_color('#ffb3b3'); red.set_border(1); red.set_border_color('#999999'); red.set_font_color('#7d0000'); red.set_align('center'); red.set_align('vcenter')
+    green = wbk.add_format(); green.set_bg_color('#9effa6'); green.set_border(1); green.set_border_color('#999999'); green.set_font_color('#005707'); green.set_align('center'); green.set_align('vcenter')
+    yellow = wbk.add_format(); yellow.set_bg_color('#fdff8f'); yellow.set_border(1); yellow.set_border_color('#999999'); yellow.set_font_color('#918a00'); yellow.set_align('center'); yellow.set_align('vcenter')
+    white = wbk.add_format(); white.set_bg_color('#ebebeb'); white.set_border(1); white.set_border_color('#999999'); white.set_font_color('#2e2e2e'); white.set_align('center'); white.set_align('vcenter')
+
+    ePlayers = []
+    for player in players:
+        if player.attendance >= ATTENDANCE_REQ:
+            ePlayers.append(player.tag)
 
     row = 1
     for player in players:
+        if player.attendance < ATTENDANCE_REQ:
+            continue
+
         col = 1
         for key in player.h2h:
-            #sheet.write(row, col, "{0} - {1}".format(player.h2h))
-            if player.h2h[key][0] > player.h2h[key][1]:
-                sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), green)
-            elif player.h2h[key][0] < player.h2h[key][1]:
-                sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), red)
-            elif player.h2h[key][0] == player.h2h[key][1]:
-                sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), yellow)
-            col += 1
+            if key in ePlayers:
+                if player.h2h[key][0] == 0 and player.h2h[key][1] == 0:
+                    sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), white)
+                elif player.h2h[key][0] > player.h2h[key][1]:
+                    sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), green)
+                elif player.h2h[key][0] < player.h2h[key][1]:
+                    sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), red)
+                elif player.h2h[key][0] == player.h2h[key][1]:
+                    sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), yellow)
+                col += 1
+        # end for
         row += 1
     # end for
-
-    #sheet.write('B1', 'Test')
 
     wbk.close()
 # end def
