@@ -7,7 +7,7 @@ import os
 import Player
 
 KEY = pysmashgg.SmashGG('2429ea2ccddc1718cc121120d210722e', True)
-FILE_NAME = 'single.txt'
+FILE_NAME = 'events.txt'
 ATTENDANCE_REQ = 1
 
 def getElligiblePlayers(tournaments):
@@ -64,7 +64,7 @@ def getH2H(players, tournaments):
                     winner = set['entrant2Players'][0]['playerTag']
                     loser = set['entrant1Players'][0]['playerTag']
 
-                if winner not in players[0].h2h.keys() or loser not in players[0].h2h.keys():
+                if winner not in players[0].h2h.keys() and loser not in players[0].h2h.keys():
                     page += 1
                     sets = KEY.tournament_show_sets(tournament, 'ultimate-singles', page)
                     break
@@ -108,13 +108,38 @@ def writeToExcel(players):
     sheet = wbk.add_worksheet()
 
     sheet.set_column(0, 0, 25)
-    sheet.set_row(0, 25)
+    sheet.set_column(1, len(players), 14)
+    sheet.set_row(0, 30)
 
     row = 1
-    for i in range(len(players)):
-        sheet.set_row(i+1, 30)
-        sheet.write(row, 0, players[i].tag)
+    col = 1
+    for player in players:
+        sheet.set_row(row, 30)
+        sheet.write(row, 0, player.tag)
+        sheet.write(0, col, player.tag)
         row += 1
+        col += 1
+    # end for
+
+    red = wbk.add_format(); red.set_bg_color('red')
+    green = wbk.add_format(); green.set_bg_color('green')
+    yellow = wbk.add_format(); yellow.set_bg_color('yellow')
+
+    row = 1
+    for player in players:
+        col = 1
+        for key in player.h2h:
+            #sheet.write(row, col, "{0} - {1}".format(player.h2h))
+            if player.h2h[key][0] > player.h2h[key][1]:
+                sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), green)
+            elif player.h2h[key][0] < player.h2h[key][1]:
+                sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), red)
+            elif player.h2h[key][0] == player.h2h[key][1]:
+                sheet.write(row, col, "{0} - {1}".format(player.h2h[key][0], player.h2h[key][1]), yellow)
+            col += 1
+        row += 1
+    # end for
+
     #sheet.write('B1', 'Test')
 
     wbk.close()

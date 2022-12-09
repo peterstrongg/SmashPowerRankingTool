@@ -13,3 +13,7 @@ class Player:
 
     def __str__(self):
         return "{0}".format(self.tag)
+
+# testDict = {"a": 1, "b": 2, "c": 3}
+# for key in testDict:
+#     print(testDict[key])
