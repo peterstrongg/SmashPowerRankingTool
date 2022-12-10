@@ -32,7 +32,7 @@ def getElligiblePlayers(tournaments):
             # end for
 
             page += 1
-            entrants = KEY.tournament_show_entrants(tournament, 'ultimate-singles', page)
+            entrants = KEY.tournament_show_entrants(tournament, 'ultimate-singles', page) 
         # end while
     # end for
 
