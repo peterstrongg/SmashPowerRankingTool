@@ -6,14 +6,18 @@ import os
 import Player
 
 KEY = pysmashgg.SmashGG('2429ea2ccddc1718cc121120d210722e', True)
+
+# Parameters for configuring output
 FILE_NAME = 'events.txt'
-ATTENDANCE_REQ = 3
+EVENT_NAME = 'ultimate-singles'
+EXCEL_FILE = 'H2HData.xlsx'
+ATTENDANCE_REQ = 4
 
 def getElligiblePlayers(tournaments):
     players = []
     for tournament in tournaments:
         page = 1
-        entrants = KEY.tournament_show_entrants(tournament, 'ultimate-singles', page)
+        entrants = KEY.tournament_show_entrants(tournament, EVENT_NAME, page)
         while len(entrants) > 0:
             for i in range(len(entrants)):
                 tag = entrants[i]['entrantPlayers'][0]['playerTag']
@@ -32,7 +36,7 @@ def getElligiblePlayers(tournaments):
             # end for
 
             page += 1
-            entrants = KEY.tournament_show_entrants(tournament, 'ultimate-singles', page) 
+            entrants = KEY.tournament_show_entrants(tournament, EVENT_NAME, page)
         # end while
     # end for
 
@@ -46,7 +50,7 @@ def getH2H(players, tournaments):
 
     for tournament in tournaments:
         page = 1
-        sets = KEY.tournament_show_sets(tournament, 'ultimate-singles', page)
+        sets = KEY.tournament_show_sets(tournament, EVENT_NAME, page)
         while len(sets) > 0:
             for set in sets:
                 winner = ''
@@ -60,7 +64,7 @@ def getH2H(players, tournaments):
 
                 if winner not in players[0].h2h.keys() and loser not in players[0].h2h.keys():
                     page += 1
-                    sets = KEY.tournament_show_sets(tournament, 'ultimate-singles', page)
+                    sets = KEY.tournament_show_sets(tournament, EVENT_NAME, page)
                     break
                 # end if
 
@@ -78,7 +82,7 @@ def getH2H(players, tournaments):
                 # end for
             # end for
             page += 1
-            sets = KEY.tournament_show_sets(tournament, 'ultimate-singles', page)
+            sets = KEY.tournament_show_sets(tournament, EVENT_NAME, page)
         # end while
     # end for
     return players
@@ -100,11 +104,11 @@ def printElligiblePlayers(players):
 
 def writeToExcel(players):
     try:
-        os.remove('H2HData.xlsx')
+        os.remove(EXCEL_FILE)
     except:
         print("xlsx file could not be removed")
 
-    wbk = xlsxwriter.Workbook('H2HData.xlsx')
+    wbk = xlsxwriter.Workbook(EXCEL_FILE)
     sheet = wbk.add_worksheet()
 
     sheet.set_column(0, 0, 17)
