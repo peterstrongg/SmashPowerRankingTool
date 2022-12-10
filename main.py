@@ -3,7 +3,6 @@ from tabulate import tabulate
 from time import sleep
 import xlsxwriter
 import os
-
 import Player
 
 KEY = pysmashgg.SmashGG('2429ea2ccddc1718cc121120d210722e', True)
@@ -87,11 +86,13 @@ def getH2H(players, tournaments):
 
 def printElligiblePlayers(players):
     table = []
-    for i in range(len(players)):
-        row = []
-        row.append(players[i].tag)
-        row.append(players[i].attendance)
-        table.append(row)
+    for player in players:
+        if player.attendance >= ATTENDANCE_REQ:
+            row = []
+            row.append(player.tag)
+            row.append(player.attendance)
+            table.append(row)
+        # end if
     # end for
 
     print(tabulate(table, headers = ["Players", "Attendance"]))
@@ -131,6 +132,7 @@ def writeToExcel(players):
     yellow = wbk.add_format(); yellow.set_bg_color('#fdff8f'); yellow.set_border(1); yellow.set_border_color('#999999'); yellow.set_font_color('#918a00'); yellow.set_align('center'); yellow.set_align('vcenter')
     white = wbk.add_format(); white.set_bg_color('#ebebeb'); white.set_border(1); white.set_border_color('#999999'); white.set_font_color('#2e2e2e'); white.set_align('center'); white.set_align('vcenter')
 
+    # Create array of tags of elligible players
     ePlayers = []
     for player in players:
         if player.attendance >= ATTENDANCE_REQ:
