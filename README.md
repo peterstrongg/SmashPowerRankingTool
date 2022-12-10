@@ -1,1 +1,1 @@
-"# SmashPowerRankingTool" 
+# Smash Power Ranking Tool
